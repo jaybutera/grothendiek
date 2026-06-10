@@ -10,9 +10,11 @@ defines:
     - Invariant
     - DontCare
     - Verdict
+    - Artifact
     - Guard
     - Effect
-    - Frame
+    - Entity
+    - Variable
     - Procedure
     - Footprint
     - Witness
@@ -21,19 +23,23 @@ defines:
   relations:
     - guard: Requirement -> Guard
     - effects: Requirement -> Effect+       # assignments to vocabulary variables
-    - frame: Requirement -> Frame?          # group frozen unless mentioned (D12)
+    - frame: Requirement -> Entity?         # entity frozen unless mentioned (D12, D14)
     - overrides: Requirement -> Requirement*  # declared exceptions (D9)
     - footprint: Requirement -> Footprint   # = guard region
     - procedure: Criterion -> Procedure     # declared evaluation steps
     - footprint: Criterion -> Footprint     # declared topics/regions
-    - rules_on: Verdict -> Criterion*       # designer ruling (CRI-R2)
+    - belongs_to: Variable -> Entity        # every variable has an entity (D14)
+    - rules_on: Verdict -> Criterion*       # reconciliation rulings (CRI-R2)
+    - at: Verdict -> Artifact?              # execution verdicts: the pinned
+                                            # snapshot judged (D13)
     - because: Requirement -> Decision*     # rationale links
     - supersedes: Decision -> Decision*
     - witness: Finding -> Witness?
   values:
     card.kind: [requirement, criterion, decision, invariant, dont_care, verdict]
+    verdict.kind: [execution, reconciliation]
     decision.status: [active, superseded]
-    finding.kind: [conflict, gap, dead_rule, unknown_term,
+    finding.kind: [conflict, gap, dead_rule, frame_strengthened, unknown_term,
                    duplicate_definition, stale_decision_ref, orphan_spec]
 ---
 
@@ -47,9 +53,16 @@ A **Requirement** is the atomic unit of the spec proper — not a type, not
 a data model (see [[D1]] in `specs/checking.md`). It is fully mechanical:
 a guard (its domain: a region of situation space) plus structured
 `effects:` — assignments to vocabulary variables, checked by enumeration.
-An optional `frame:` names a variable group frozen unless mentioned; it
-desugars to `-> unchanged` effects (see [[D12]] in `specs/checking.md`).
-Its footprint is exactly its guard region.
+An optional `frame:` names an Entity whose attributes are frozen unless
+mentioned; it desugars to `-> unchanged` effects (see [[D12]] and [[D14]]
+in `specs/checking.md`). Its footprint is exactly its guard region.
+
+Vocabularies declare **Entities**, and every **Variable** belongs to one —
+entities are the factorization of situation space ([[D14]]), shared across
+specs through interfaces like any other concept. An **Artifact** is a
+pinned, immutable, addressable snapshot of the implementation (a commit
+hash); it is what judged procedures execute against ([[D13]] in
+`specs/criteria.md`).
 
 A **Criterion** is the judged layer (see [[D11]] in `specs/criteria.md`):
 a footprint plus a declared evaluation Procedure an agent executes at
@@ -59,8 +72,11 @@ check procedure — mechanical or judged — cannot exist.
 
 **Invariant** cards claim a region of situation space is impossible;
 **DontCare** cards accept any behavior in a possible region, with rationale
-(see [[D10]] in `specs/checking.md`). **Verdict** cards record a designer
-ruling on contradictory criteria (see CRI-R2 in `specs/criteria.md`).
+(see [[D10]] in `specs/checking.md`). **Verdict** cards come in two kinds
+([[D13]]): *execution* verdicts record a procedure's outcome against one
+(criterion version, Artifact) pair; *reconciliation* rulings record a
+designer's resolution of contradictory criteria, independent of any
+artifact (see CRI-R2 in `specs/criteria.md`).
 
 A **Decision** records a choice *and its rejected alternatives and reasons*.
 Decisions are immutable once recorded: the only way to change one is a new

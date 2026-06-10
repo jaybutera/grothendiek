@@ -41,7 +41,8 @@ because: [[D2]]                            ← rationale links
 
 Every card declares how it is checked (D7→D11): **requirements** are fully
 mechanical — guard + effects in vocabulary terms, checked by enumeration,
-with an optional `frame:` clause freezing a variable group (D12);
+with an optional `frame:` clause freezing an entity's remaining
+attributes (D12, D14);
 **criteria** are the structurally separate judged layer — footprint + an
 evaluation procedure an agent executes at review time, verdicts recorded
 as judgment calls. Criteria never count toward coverage and never enter

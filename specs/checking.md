@@ -18,6 +18,8 @@ vocabulary:
   term.resolved: [yes, no]                # defined locally or via import
   decision_ref.target_status: [active, superseded]
   finding.pointer: [witness, location, none]
+  frame.strengthened: [yes, no]           # framed entity gained attributes
+                                          # since the last accepted check
 ---
 
 # Checking
@@ -86,6 +88,13 @@ then: report.sections = separated — mechanical findings (Proven) and
       blended status is emitted
 because: [[D11]]
 
+## CHK-R11: frame growth is surfaced, never silent
+when: event = check_run and frame.strengthened = yes
+then: finding = frame_strengthened, naming the framed card, the entity,
+      and the newly frozen attribute(s) — phrased as a question: "R1's
+      frame now also freezes sub.notes — intended?"
+because: [[D14]]
+
 ---
 
 ## D1 (decision, 2026-06-10): requirements are the atomic unit
@@ -144,3 +153,21 @@ as the default (kills composition; nearly every overlap would conflict);
 no frame construct at all (stasis intent stays inexpressible — an
 implementation that pauses the sub *and* upgrades the plan would satisfy
 the card). Closes GAP-7.
+
+## D14 (decision, 2026-06-10): entities are the factorization of situation space
+A frame group is not a name-prefix — it is an **Entity**. Vocabularies
+declare entities; every variable belongs to one; situation space factors
+as the product of entity spaces (UserSpace × SubSpace × …). `frame: sub`
+means: identity on the Sub factor except at explicitly written
+coordinates. A frame ranges over the entity's attributes *in the glued,
+whole-system vocabulary* — entities are shared through interfaces like any
+concept, so "nothing about the subscription changes" tracks the entity,
+not one file's snapshot of it. Growth is visible, never silent: a new
+spec adding an attribute to a shared entity strengthens existing frames
+and emits a `frame_strengthened` finding (CHK-R11) for the designer to
+confirm. The nouns thus re-enter the system in their correct role — not
+as spec content (rejected at D1), but as the coordinate structure of the
+behavioral space. **Rejected:** prefix-matching (`sub.*`) — a frame's
+meaning becomes an accident of spelling, and any spec anywhere silently
+strengthens every frame that shares the prefix. Closes GAP-10; Vocabulary
+structure is now governed (its evolution remains GAP-4).

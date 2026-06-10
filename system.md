@@ -8,7 +8,11 @@ coverage` (future) diffs this list against the union of spec footprints.
 - **Interface** — a deliberately small spec that exists to be imported, so
   shared concepts are provably the same concept.
 - **Vocabulary** — finite enumerations of states/events; the coordinate
-  system for situation space.
+  system for situation space. Variables are grouped into entities.
+- **Entity** — a declared group of variables (User, Subscription, …); a
+  factor of situation space; the range of a frame clause.
+- **Artifact** — a pinned, immutable, addressable snapshot of the
+  implementation (a commit hash); what judged procedures execute against.
 - **Situation** — one assignment of values to vocabulary terms.
 - **Card** — the atomic, addressable unit of spec content: requirement,
   decision, invariant, don't-care, or verdict.
@@ -21,16 +25,17 @@ coverage` (future) diffs this list against the union of spec footprints.
   card's domain.
 - **Effect** — an assignment to a vocabulary variable (a transition like
   `sub.state -> paused`, or a response fact like `charge = no`).
-- **Frame** — an optional clause naming a variable group frozen unless
-  mentioned; desugars to `-> unchanged` effects.
+- **Frame** — an optional clause naming an entity whose attributes are
+  frozen unless mentioned; desugars to `-> unchanged` effects.
 - **Procedure** — a criterion's declared evaluation steps, executed by an
   agent; verdicts are judgment calls.
 - **Invariant** — a card claiming a region of situation space is impossible;
   falsifiable, and a verification obligation against the implementation.
 - **Don't-care** — a card accepting any behavior in a possible region, with
   rationale.
-- **Verdict** — a recorded designer ruling on contradictory criteria, bound
-  to the artifact it judged.
+- **Verdict** — execution kind: a procedure's outcome at one (criterion,
+  artifact) pair; reconciliation kind: a designer ruling on contradictory
+  criteria, artifact-independent.
 - **Footprint** — the region of situation space (or topic set) a card governs.
 - **Decision** — a recorded choice with rationale and supersession links.
 - **Conflict** — overlapping guards with incompatible outcomes.
