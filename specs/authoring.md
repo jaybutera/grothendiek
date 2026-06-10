@@ -5,7 +5,7 @@ imports:
     use: [Spec, Requirement, Decision, Delta]
 vocabulary:
   event: [gap_answered, delta_proposed, delta_approved, delta_rejected,
-          decision_change_needed, agent_edit_planned]
+          decision_change_needed, agent_edit_planned, spec_change_planned]
   actor: [designer, builder_agent]
   delta.status: [proposed, approved, rejected]
   collision.with_active_decision: [yes, no]
@@ -50,6 +50,24 @@ then: the agent does not proceed; it surfaces the colliding Decision *and
       withdraw the change
 because: [[D6]]
 
+## AUT-R7: all spec changes are deltas
+when: event = spec_change_planned and actor = builder_agent
+then: the change — card edit, card deletion, vocabulary change, anything
+      in a spec file — is packaged as a Delta and approved per AUT-R2;
+      direct edits outside a delta are prohibited. Requirements may be
+      edited or deleted this way (git history retains every prior
+      version); decisions remain supersede-only (AUT-R3), because their
+      value is the lineage of rejected alternatives, not the current text
+because: [[D16]]
+
+## AUT-R8: rejections are remembered
+when: event = delta_rejected
+then: the delta is retained with delta.status = rejected and the
+      designer's stated reason; pre-edit queries (AUT-R4) surface
+      rejected deltas touching the work's region, so agents do not
+      re-propose what the designer already declined
+because: [[D16]]
+
 ## AUT-R6: operative content is checkable; prose carries rationale
 when: event = delta_proposed
 then: every requirement card in the delta has a guard and structured
@@ -59,6 +77,21 @@ then: every requirement card in the delta has a guard and structured
 because: [[D11]]
 
 ---
+
+## D16 (decision, 2026-06-10): everything changes by delta
+The delta is the only write path to the spec, for agents and for any
+card kind — closing the loophole that let three check runs edit
+requirement cards in place legally. Lifecycle splits by what a card's
+value *is*: requirements are current-commitment-valued, so approved
+deltas may edit or delete them and git history (D15) preserves the
+lineage; decisions are lineage-valued, so they remain append-only with
+explicit supersession. Rejected deltas are part of the record: a
+declined proposal plus its reason is exactly the kind of implicit
+decision agents otherwise rediscover and re-propose forever.
+**Rejected:** supersession ceremony for requirements (duplicates what
+git already records, taxes every small edit); discarding rejected
+deltas (the re-proposal loop). Closes GAP-3, GAP-4's process half, and
+GAP-5.
 
 ## D5 (decision, 2026-06-10): prose-primary, minimal formal surface
 status: superseded by [[D7]]

@@ -41,7 +41,9 @@ coverage` (future) diffs this list against the union of spec footprints.
 - **Conflict** — overlapping guards with incompatible outcomes.
 - **Gap** — an in-scope situation covered by no guard.
 - **Witness** — a concrete situation demonstrating a conflict or gap.
-- **Check report** — output of `spec check`: findings, each with a witness.
+- **Check report** — output of `spec check`: findings, each with a witness;
+  committed alongside the delta that produced it, and the committed report
+  at HEAD is the baseline for stateful comparisons.
 - **Query** — retrieval of cards relevant to a region/topic of work.
 - **Delta** — a proposed card change awaiting designer approval.
 - **Designer** — the human; reads prose and answers questions; does not read code.

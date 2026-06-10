@@ -19,7 +19,8 @@ vocabulary:
   decision_ref.target_status: [active, superseded]
   finding.pointer: [witness, location, none]
   frame.strengthened: [yes, no]           # framed entity gained attributes
-                                          # since the last accepted check
+                                          # since the baseline: the committed
+                                          # REPORT at HEAD (PRO-R1)
 ---
 
 # Checking

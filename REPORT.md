@@ -1,27 +1,28 @@
-# Check report — 2026-06-10, run 4 (hand-run; no tooling exists yet)
+# Check report — 2026-06-10, run 5 (hand-run; no tooling exists yet)
 
 Per CHK-R2 / D3, gaps are phrased as questions for the designer. Per CHK-I1,
 every finding carries a witness or location. Per CHK-R10, Proven and Judged
-are reported separately.
+are reported separately. Per PRO-R1, this report lands in the same commit
+as the delta that produced it.
 
-## Resolved since run 3
+## Resolved since run 4
 
-- **GAP-9 → closed by D13** (`specs/criteria.md`): Artifact = pinned,
-  immutable snapshot of the implementation. Verdicts split: *execution*
-  verdicts (indexed by criterion × artifact, expire when a change touches
-  the footprint — CRI-R4) vs. *reconciliation* rulings (criterion ×
-  criterion, artifact-independent, expire when either criterion changes —
-  CRI-R5).
-- **GAP-10 → closed by D14** (`specs/checking.md`): frame groups are
-  Entities, not name prefixes. Vocabularies declare entities; every
-  variable belongs to one; situation space factors as the product of
-  entity spaces. Frames range over the entity in the glued vocabulary;
-  growth emits a `frame_strengthened` finding (CHK-R11), never silent.
+- **GAP-11 + GAP-6 → closed by D15** (`specs/process.md`, new): git is the
+  memory, the commit is the clock. Check runs before every spec commit and
+  on demand (PRO-R2); review runs per artifact PR (PRO-R3); the committed
+  REPORT at HEAD is the baseline for CHK-R11; "accepted check" = "commit".
+- **GAP-3 + GAP-4 + GAP-5 → closed by D16** (`specs/authoring.md`): the
+  delta is the only write path for any spec change, by any agent (AUT-R7).
+  Requirements are current-commitment-valued — editable/deletable by
+  approved delta, lineage kept by git; decisions stay supersede-only.
+  Rejected deltas are retained with reasons and surfaced by pre-edit
+  queries (AUT-R8), ending the re-proposal loop.
 
 ## Proven (mechanical findings)
 
-**Conflicts:** none found. (CRI-R4/R5 fire on disjoint events; CRI-R2/R3
-partition on `pair.ruling`.)
+**Conflicts:** none found. (PRO-R1/R2 share guard `event = spec_commit`
+but write disjoint variables — `report.fresh` vs. `check.executed` — and
+compose per D9.)
 
 **Dead rules:** none found (no invariant cards exist yet).
 
@@ -31,44 +32,28 @@ No criterion cards exist yet; nothing to execute.
 
 ## Gaps
 
-**GAP-3 — requirements have no lifecycle.** (open; three runs of in-place
-edits now)
-Witness: CRI-R1/R2/R3 were edited in place this run.
-→ *Delete, or supersede-only like decisions? Should in-place edits require
-a delta at minimum?*
-
-**GAP-4 — vocabulary evolution is ungoverned.** (open; narrowed by D14)
-D14 governs vocabulary *structure* (entities, membership, growth
-visibility); the *approval process* for changes is still uncovered.
-Witness: this run added three event values to `criteria.md`'s vocabulary
-with no governing card.
-→ *Should vocabulary changes be deltas requiring designer approval?*
-
-**GAP-5 — delta rejection is half-specified.** (open, unchanged)
-Witness: situation `event = delta_rejected` — no card fires.
-→ *Discard, or record with reason so agents stop re-proposing?*
-
-**GAP-6 — nothing says when check or review runs.** (open, unchanged)
-→ *check: CI gate, pre-edit hook, on-demand? work_review: every PR, every
-delta, designer-initiated?*
-
-**GAP-11 — "since the last accepted check" implies a baseline.** (new,
-consequence of D14/CHK-R11)
-`frame.strengthened` compares against a previous state, but check is
-stateless and CHK-R7 forbids it writing anything.
-Witness: CHK-R11's guard variable has no defined reference point.
-→ *Does an accepted check write a lockfile (who accepts it — does this
-overload delta approval?), or is the baseline simply the last committed
-REPORT, making the git history the state?*
+**GAP-12 — the spec↔implementation correspondence is undeclared.** (new,
+and now the only open gap)
+CRI-R4 branches on `diff.touches_footprint` and PRO-R3 reviews artifact
+changes — both presume a mapping from implementation regions (files,
+modules, endpoints) to spec footprints, and no card defines it.
+Witness: any code diff — nothing currently determines which criteria or
+requirements it touches, so AUT-R4's pre-edit query and CRI-R4's
+staleness rule cannot actually be computed against code.
+→ *How is the correspondence declared — footprint annotations naming code
+paths on cards, a separate mapping file owned like a spec, or inferred by
+an agent at review time and recorded as it goes?*
 
 ## Coverage (vs `system.md`)
 
-Covered: Spec, Interface, Card, Requirement, Criterion, Guard, Effect,
-Frame, Entity, Procedure, Footprint, Decision, Conflict, Gap, Witness,
-Finding/Check report, Query, Delta, Designer, Builder agent, Invariant,
-Don't-care, Verdict, Artifact, Vocabulary (structure via D14; evolution
-pending GAP-4).
+Covered: every glossary concept. Process gaps GAP-3..6 and GAP-11 are
+closed; the spec is, at its current vocabulary, conflict-free and
+complete except for GAP-12.
 
-Uncovered: none at the concept level — every glossary entry now has at
-least one governing card. Remaining exposure is process-shaped (GAP-3..6,
-GAP-11), not concept-shaped.
+## Note
+
+For the first time the gap list does not point inward at the spec
+system's own mechanics — it points outward, at the seam between the spec
+and a real codebase. The natural next delta is not more spec: it is the
+first implementation step (`spec check` as a tool, run against this
+repo), which is also exactly the work that will force GAP-12's answer.
