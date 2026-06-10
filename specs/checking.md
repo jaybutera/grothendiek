@@ -4,7 +4,6 @@ imports:
   - from: core
     use: [Spec, Requirement, Guard, Decision, Finding, Witness]
 vocabulary:
-  event: [check_run]
   pair.guards_overlap: [yes, no]          # ∃ situation satisfying both guards
   pair.effects_clash: [yes, no]           # same effect variable, different values
   pair.override_declared: [yes, no]       # an overrides: link connects the pair
@@ -21,6 +20,16 @@ vocabulary:
   frame.strengthened: [yes, no]           # framed entity gained attributes
                                           # since the baseline: the committed
                                           # REPORT at HEAD (PRO-R1)
+  finding.conflict: [emitted, none]       # finding.* compose: several findings
+  finding.gap: [emitted, none]            # can be emitted for one situation,
+  finding.dead_rule: [emitted, none]      # so each kind is its own variable
+  finding.unknown_term: [emitted, none]
+  finding.duplicate_definition: [emitted, none]
+  finding.stale_decision_ref: [emitted, none]
+  finding.frame_strengthened: [emitted, none]
+  annotation.criterion_present: [yes, no]
+  report.sections: [separated, blended]
+  spec.write_count: [zero, nonzero]
 ---
 
 # Checking
@@ -35,29 +44,30 @@ requirements only — criteria are executed at review time, not check time
 ## CHK-R1: conflicts are reported with witnesses
 when: event = check_run and pair.guards_overlap = yes and
       pair.effects_clash = yes and pair.override_declared = no
-then: finding = conflict, naming both cards, their specs, any
+then: finding.conflict = emitted — naming both cards, their specs, any
       `because:`-linked decisions, and at least one witness situation
 because: [[D3]], [[D9]]
 
 ## CHK-R2: gaps are reported as designer questions
 when: event = check_run and situation.covered = no and situation.excluded = no
-then: finding = gap, containing a witness situation rendered as a
+then: finding.gap = emitted — containing a witness situation rendered as a
       plain-English question the designer can answer in conversation
 because: [[D3]], [[D10]]
 
 ## CHK-R3: unresolved terms are errors
 when: event = check_run and term.resolved = no
-then: finding = unknown_term, pointing at the card and spec using it
+then: finding.unknown_term = emitted — pointing at the card and spec
+      using it
 
 ## CHK-R4: no duplicate definitions without a shared interface
 when: event = check_run and concept.multiply_defined = yes and
       concept.via_shared_interface = no
-then: finding = duplicate_definition, naming every defining spec
+then: finding.duplicate_definition = emitted — naming every defining spec
 
 ## CHK-R5: stale decision references are warnings
 when: event = check_run and decision_ref.target_status = superseded
-then: finding = stale_decision_ref, naming the card, the superseded
-      decision, and the decision that superseded it
+then: finding.stale_decision_ref = emitted — naming the card, the
+      superseded decision, and the decision that superseded it
 
 ## CHK-I1 (invariant): no finding without a pointer
 invariant: finding.pointer != none — every emitted finding carries a
@@ -65,13 +75,14 @@ witness situation or a file/card location, never a bare assertion.
 
 ## CHK-R7: check is read-only
 when: event = check_run
-then: no spec file is created, modified, or deleted; proposing fixes is
-      authoring's job (see `specs/authoring.md`), never check's
+then: spec.write_count = zero — no spec file is created, modified, or
+      deleted; proposing fixes is authoring's job (see
+      `specs/authoring.md`), never check's
 
 ## CHK-R8: dead rules are detected
 when: event = check_run and guard.within_impossible = yes
-then: finding = dead_rule, naming the card whose guard can never fire and
-      the invariant card(s) that exclude its entire region
+then: finding.dead_rule = emitted — naming the card whose guard can never
+      fire and the invariant card(s) that exclude its entire region
 because: [[D10]]
 
 ## CHK-R9: criteria do not silence gaps
@@ -91,9 +102,9 @@ because: [[D11]]
 
 ## CHK-R11: frame growth is surfaced, never silent
 when: event = check_run and frame.strengthened = yes
-then: finding = frame_strengthened, naming the framed card, the entity,
-      and the newly frozen attribute(s) — phrased as a question: "R1's
-      frame now also freezes sub.notes — intended?"
+then: finding.frame_strengthened = emitted — naming the framed card, the
+      entity, and the newly frozen attribute(s), phrased as a question:
+      "R1's frame now also freezes sub.notes — intended?"
 because: [[D14]]
 
 ---

@@ -4,10 +4,13 @@ imports:
   - from: core
     use: [Requirement, Decision, Footprint]
 vocabulary:
-  event: [query_run]
   query.mode: [touching, governing]
   card.footprint_vs_region: [disjoint, intersects, contains]
   card.kind: [requirement, criterion]
+  card.has_because: [yes, no]
+  result.included: [yes, no]
+  result.marked: [none, criterion]
+  result.includes_rationale: [yes, no]
 ---
 
 # Querying
@@ -22,23 +25,24 @@ region (the two adjoints of restriction; see [[D4]]).
 
 ## QRY-R1: touching mode returns everything that might bear on the work
 when: event = query_run and query.mode = touching and card.footprint_vs_region = intersects
-then: the card is included in the result
+then: result.included = yes — the card is in the result
 because: [[D4]]
 
 ## QRY-R2: touching mode also returns containing cards
 when: event = query_run and query.mode = touching and card.footprint_vs_region = contains
-then: the card is included in the result
+then: result.included = yes — containing cards bear on the work too
 
 ## QRY-R3: governing mode returns only cards covering the whole region
 when: event = query_run and query.mode = governing and card.footprint_vs_region = contains
-then: the card is included; cards that merely intersect are excluded
+then: result.included = yes — cards that merely intersect are excluded in
+      governing mode
 because: [[D4]]
 
 ## QRY-R4: results carry their rationale
-when: event = query_run and an included Requirement has `because:` links
-then: the linked Decisions appear in the result with their rationale and
-      rejected alternatives, so an agent can argue with a rule, not just
-      obey or silently break it
+when: event = query_run and card.has_because = yes
+then: result.includes_rationale = yes — the linked Decisions appear in
+      the result with their rationale and rejected alternatives, so an
+      agent can argue with a rule, not just obey or silently break it
 
 ## QRY-R5: criteria are returned, and marked as such
 when: event = query_run and card.kind = criterion and

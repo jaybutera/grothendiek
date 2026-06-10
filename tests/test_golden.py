@@ -21,16 +21,16 @@ def _counts(result):
 def test_repo_finding_set():
     result = check(REPO_ROOT)
     counts = _counts(result)
-    # These are the dogfood findings on the self-hosted spec, run 5+:
-    assert counts.get("unknown_term") == 12
-    assert counts.get("duplicate_definition") == 1
-    assert counts.get("nonconforming_card") == 18
-    assert counts.get("entities_underspecified") == 1
+    # Post delta cycle 5: the self-hosted spec is error-free. Every card
+    # parses, every variable is declared, event is declared once (core).
+    assert counts.get("unknown_term", 0) == 0
+    assert counts.get("duplicate_definition", 0) == 0
+    assert counts.get("nonconforming_card", 0) == 0
     assert counts.get("conflict", 0) == 0
     assert counts.get("dead_rule", 0) == 0
-    assert counts.get("gap", 0) >= 1
-    # exit code non-zero because errors (unknown_term, duplicate_definition)
-    assert exit_code(result) == 1
+    assert counts.get("entities_underspecified") == 1
+    assert counts.get("gap", 0) >= 1  # warnings, mostly event-projection
+    assert exit_code(result) == 0
 
 
 def test_report_walls_off_proven_and_judged():
@@ -65,10 +65,11 @@ def test_json_output_is_valid():
     payload = json.loads(render_json(result))
     assert "findings" in payload
     assert "counts" in payload
-    assert payload["exit_code"] == 1
+    assert payload["exit_code"] == 0
 
 
 def test_strict_promotes_warnings():
     result = check(REPO_ROOT)
-    # already exit 1 from errors; check the strict flag path is honored
+    # exit 0 normally (warnings only); --strict promotes the gaps to errors
+    assert exit_code(result) == 0
     assert exit_code(result, strict=True) == 1

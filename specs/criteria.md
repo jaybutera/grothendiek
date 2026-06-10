@@ -4,11 +4,15 @@ imports:
   - from: core
     use: [Criterion, Procedure, Verdict, Artifact, Footprint]
 vocabulary:
-  event: [work_review, artifact_changed, criterion_changed]
   criterion.touched: [yes, no]      # work region ∩ criterion footprint ≠ ∅
   pair.contradictory: [yes, no]     # two touched criteria pull opposite ways
   pair.ruling: [none, valid, expired]
   diff.touches_footprint: [yes, no] # artifact change intersects the footprint
+  procedure.executed: [yes, no]
+  verdict.recorded: [none, execution, reconciliation]
+  verdict.status: [fresh, stale]
+  escalation: [none, designer]
+  ruling.applied: [yes, no]
 ---
 
 # Criteria
@@ -37,31 +41,31 @@ because: [[D11]], [[D13]]
 ## CRI-R2: contradictions escalate to the designer
 when: event = work_review and pair.contradictory = yes and
       pair.ruling = none
-then: escalation = designer; the resolution is recorded as a
+then: escalation = designer — the resolution is recorded as a
       reconciliation Verdict naming both criteria and the situation that
-      exposed the tension — no artifact index, it is about the criteria
+      exposed the tension; no artifact index, it is about the criteria
       themselves
 because: [[D11]], [[D13]]
 
 ## CRI-R3: rulings are remembered while valid
 when: event = work_review and pair.contradictory = yes and
       pair.ruling = valid
-then: the recorded ruling applies; the pair is not re-raised to the
-      designer
+then: ruling.applied = yes — the recorded ruling applies; the pair is not
+      re-raised to the designer
 because: [[D11]]
 
 ## CRI-R4: execution verdicts expire with the artifact
 when: event = artifact_changed and diff.touches_footprint = yes
-then: verdict.status = stale for that criterion's execution verdicts; the
-      criterion is due re-execution at the next work_review. Changes not
-      touching the footprint transport the verdict for free
+then: verdict.status = stale — for that criterion's execution verdicts;
+      the criterion is due re-execution at the next work_review. Changes
+      not touching the footprint transport the verdict for free
 because: [[D13]]
 
 ## CRI-R5: rulings expire with their criteria
 when: event = criterion_changed
-then: pair.ruling = expired for every reconciliation ruling naming the
+then: pair.ruling = expired — for every reconciliation ruling naming the
       changed criterion; the next contradiction re-escalates (CRI-R2).
-      Rulings otherwise persist across artifacts — they are
+      Rulings otherwise persist across artifacts; they are
       artifact-independent
 because: [[D13]]
 

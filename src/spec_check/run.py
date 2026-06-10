@@ -158,8 +158,15 @@ def check(root: str) -> C.CheckResult:
     # 11. orphan_spec
     C.check_orphans(specs, result)
 
-    # 12. frame_strengthened (CHK-R11 / D15) — git baseline
-    _check_frame_strengthened(root, result)
+    # 12. frame_strengthened (CHK-R11 / D15) — git baseline.
+    # Per CHK-R11 the finding is about *framed* entities only: it names the
+    # framed card. Entity growth with no frame over it strengthens nothing.
+    framed: dict[str, list[str]] = {}
+    for spec in specs:
+        for card in spec.cards:
+            if card.frame:
+                framed.setdefault(card.frame, []).append(card.card_id)
+    _check_frame_strengthened(root, result, framed)
 
     # sort findings: errors first, then by kind, for stable output
     order = {Severity.ERROR: 0, Severity.WARNING: 1}
@@ -167,7 +174,9 @@ def check(root: str) -> C.CheckResult:
     return result
 
 
-def _check_frame_strengthened(root: str, result: C.CheckResult) -> None:
+def _check_frame_strengthened(
+    root: str, result: C.CheckResult, framed: dict[str, list[str]]
+) -> None:
     baseline = _read_baseline_entities(root)
     if baseline is None:
         result.baseline_note = (
@@ -179,27 +188,29 @@ def _check_frame_strengthened(root: str, result: C.CheckResult) -> None:
         ent: set(vs) for ent, vs in result.entity_vars.items()
     }
     grew = []
-    for ent, vs in current.items():
+    for ent, card_ids in sorted(framed.items()):
         old = baseline.get(ent, set())
-        new_attrs = vs - old
+        new_attrs = current.get(ent, set()) - old
         if old and new_attrs:
-            grew.append((ent, sorted(new_attrs)))
+            grew.append((ent, sorted(new_attrs), card_ids))
     if grew:
-        for ent, attrs in grew:
+        for ent, attrs, card_ids in grew:
+            cards = ", ".join(card_ids)
             result.findings.append(
                 C.Finding(
                     kind="frame_strengthened",
                     severity=Severity.WARNING,
                     message=(
                         f"Entity '{ent}' gained attribute(s) "
-                        f"{', '.join(attrs)} since the baseline REPORT — any "
-                        f"frame: {ent} now also freezes them. Intended?"
+                        f"{', '.join(attrs)} since the baseline REPORT — the "
+                        f"frame on {cards} now also freezes them. Intended?"
                     ),
-                    location="vocabulary (all specs)",
+                    location=cards,
                 )
             )
         result.baseline_note = "baseline: HEAD:REPORT.md entity snapshot."
     else:
         result.baseline_note = (
-            "baseline: HEAD:REPORT.md entity snapshot — no frame growth."
+            "baseline: HEAD:REPORT.md entity snapshot — no frame growth "
+            "on framed entities."
         )

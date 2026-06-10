@@ -4,11 +4,17 @@ imports:
   - from: core
     use: [Spec, Requirement, Decision, Delta]
 vocabulary:
-  event: [gap_answered, delta_proposed, delta_approved, delta_rejected,
-          decision_change_needed, agent_edit_planned, spec_change_planned]
   actor: [designer, builder_agent]
   delta.status: [proposed, approved, rejected]
   collision.with_active_decision: [yes, no]
+  delta.drafted: [yes, no]
+  delta.retained: [yes, no]
+  approver: [designer, builder_agent]
+  decision.recorded: [none, superseding]
+  query.run_before_edit: [yes, no]
+  edit.proceeds: [yes, no]
+  card.checkable: [yes, no]
+  change.packaged_as_delta: [yes, no]
 ---
 
 # Authoring
@@ -20,60 +26,64 @@ conversations.
 
 ## AUT-R1: gap answers become deltas, not edits
 when: event = gap_answered and actor = designer
-then: an agent drafts a Delta containing the new/changed requirement card
-      (with guard, effects, and `because:` links) and presents it for
-      approval; nothing merges on the designer's words alone
+then: delta.drafted = yes — an agent drafts a Delta containing the
+      new/changed requirement card (with guard, effects, and `because:`
+      links) and presents it for approval; nothing merges on the
+      designer's words alone
 because: [[D11]]
 
 ## AUT-R2: only the designer approves deltas
 when: event = delta_approved
-then: the approving actor is the designer; builder agents may propose and
-      revise deltas but never approve their own
+then: approver = designer — builder agents may propose and revise deltas
+      but never approve their own
 
 ## AUT-R3: decisions are superseded, never edited
 when: event = decision_change_needed
-then: a new Decision is recorded with a `supersedes:` link and its own
-      rationale; the old card's text is untouched and its status becomes
-      superseded
+then: decision.recorded = superseding — a new Decision with a
+      `supersedes:` link and its own rationale; the old card's text is
+      untouched and its status becomes superseded
 because: [[D6]]
 
 ## AUT-R4: agents query before editing
 when: event = agent_edit_planned and actor = builder_agent
-then: the agent runs `spec query --touching` over the work's region before
-      modifying behavior, and treats the returned cards as constraints
+then: query.run_before_edit = yes — the agent runs `spec query --touching`
+      over the work's region before modifying behavior, and treats the
+      returned cards as constraints
 because: [[D6]]
 
 ## AUT-R5: collisions stop the edit, with the rationale attached
 when: event = agent_edit_planned and collision.with_active_decision = yes
-then: the agent does not proceed; it surfaces the colliding Decision *and
+then: edit.proceeds = no — the agent surfaces the colliding Decision *and
       its rationale* to the designer, who may supersede it (AUT-R3) or
       withdraw the change
 because: [[D6]]
 
 ## AUT-R7: all spec changes are deltas
 when: event = spec_change_planned and actor = builder_agent
-then: the change — card edit, card deletion, vocabulary change, anything
-      in a spec file — is packaged as a Delta and approved per AUT-R2;
-      direct edits outside a delta are prohibited. Requirements may be
-      edited or deleted this way (git history retains every prior
-      version); decisions remain supersede-only (AUT-R3), because their
-      value is the lineage of rejected alternatives, not the current text
+then: change.packaged_as_delta = yes — any change (card edit, card
+      deletion, vocabulary change, anything in a spec file) is packaged
+      as a Delta and approved per AUT-R2; direct edits outside a delta
+      are prohibited. Requirements may be edited or deleted this way
+      (git history retains every prior version); decisions remain
+      supersede-only (AUT-R3), because their value is the lineage of
+      rejected alternatives, not the current text
 because: [[D16]]
 
 ## AUT-R8: rejections are remembered
 when: event = delta_rejected
-then: the delta is retained with delta.status = rejected and the
-      designer's stated reason; pre-edit queries (AUT-R4) surface
-      rejected deltas touching the work's region, so agents do not
-      re-propose what the designer already declined
+then: delta.retained = yes, delta.status = rejected — with the designer's
+      stated reason; pre-edit queries (AUT-R4) surface rejected deltas
+      touching the work's region, so agents do not re-propose what the
+      designer already declined
 because: [[D16]]
 
 ## AUT-R6: operative content is checkable; prose carries rationale
 when: event = delta_proposed
-then: every requirement card in the delta has a guard and structured
-      effects in vocabulary terms; every criterion card has a footprint
-      and a declared evaluation procedure; explanation, motivation, and
-      nuance go in prose, which never carries operative semantics
+then: card.checkable = yes — every requirement card in the delta has a
+      guard and structured effects in vocabulary terms; every criterion
+      card has a footprint and a declared evaluation procedure;
+      explanation, motivation, and nuance go in prose, which never
+      carries operative semantics
 because: [[D11]]
 
 ---

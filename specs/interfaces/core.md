@@ -1,6 +1,11 @@
 ---
 spec: core
 kind: interface
+vocabulary:
+  event: [check_run, query_run, work_review, artifact_changed,
+          criterion_changed, spec_commit, artifact_pr, gap_answered,
+          delta_proposed, delta_approved, delta_rejected,
+          decision_change_needed, agent_edit_planned, spec_change_planned]
 defines:
   concepts:
     - Spec

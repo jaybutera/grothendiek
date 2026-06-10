@@ -4,9 +4,9 @@ imports:
   - from: core
     use: [Spec, Artifact, Finding, Delta]
 vocabulary:
-  event: [spec_commit, artifact_pr]
   report.fresh: [yes, no]      # REPORT regenerated as part of this commit
   check.executed: [yes, no]
+  work_review: [pending, executed]
 ---
 
 # Process
@@ -32,8 +32,8 @@ because: [[D15]]
 
 ## PRO-R3: review runs per artifact change
 when: event = artifact_pr
-then: work_review executes (CRI-R1) with the change's head commit as the
-      Artifact; execution verdicts index against it
+then: work_review = executed — per CRI-R1, with the change's head commit
+      as the Artifact; execution verdicts index against it
 because: [[D13]], [[D15]]
 
 ---
