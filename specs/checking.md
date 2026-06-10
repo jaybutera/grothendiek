@@ -1,0 +1,111 @@
+---
+spec: checking
+imports:
+  - from: core
+    use: [Spec, Requirement, Guard, Decision, Finding, Witness]
+vocabulary:
+  event: [check_run]
+  pair.guards_overlap: [yes, no]          # ∃ situation satisfying both guards
+  pair.effects_clash: [yes, no]           # same effect variable, different values
+  pair.override_declared: [yes, no]       # an overrides: link connects the pair
+  situation.excluded: [no, by_invariant, by_dont_care]
+  situation.covered: [yes, no]            # ≥1 guard applies
+  guard.within_impossible: [yes, no]      # guard region ⊆ invariant-excluded zone
+  concept.multiply_defined: [yes, no]
+  concept.via_shared_interface: [yes, no]
+  term.resolved: [yes, no]                # defined locally or via import
+  decision_ref.target_status: [active, superseded]
+  finding.pointer: [witness, location, none]
+---
+
+# Checking
+
+`spec check` reads every spec, builds the import diagram, enumerates
+situation space, and emits findings. It is the "compiler": its errors are
+conflicts and structural breakage; its warnings are gaps and staleness.
+
+## CHK-R1: conflicts are reported with witnesses
+when: event = check_run and pair.guards_overlap = yes and
+      pair.effects_clash = yes and pair.override_declared = no
+then: finding = conflict, naming both cards, their specs, any
+      `because:`-linked decisions, and at least one witness situation
+because: [[D3]], [[D9]]
+
+## CHK-R2: gaps are reported as designer questions
+when: event = check_run and situation.covered = no and situation.excluded = no
+then: finding = gap, containing a witness situation rendered as a
+      plain-English question the designer can answer in conversation
+because: [[D3]], [[D10]]
+
+## CHK-R3: unresolved terms are errors
+when: event = check_run and term.resolved = no
+then: finding = unknown_term, pointing at the card and spec using it
+
+## CHK-R4: no duplicate definitions without a shared interface
+when: event = check_run and concept.multiply_defined = yes and
+      concept.via_shared_interface = no
+then: finding = duplicate_definition, naming every defining spec
+
+## CHK-R5: stale decision references are warnings
+when: event = check_run and decision_ref.target_status = superseded
+then: finding = stale_decision_ref, naming the card, the superseded
+      decision, and the decision that superseded it
+
+## CHK-I1 (invariant): no finding without a pointer
+invariant: finding.pointer != none — every emitted finding carries a
+witness situation or a file/card location, never a bare assertion.
+
+## CHK-R7: check is read-only
+when: event = check_run
+then: no spec file is created, modified, or deleted; proposing fixes is
+      authoring's job (see `specs/authoring.md`), never check's
+
+## CHK-R8: dead rules are detected
+when: event = check_run and guard.within_impossible = yes
+then: finding = dead_rule, naming the card whose guard can never fire and
+      the invariant card(s) that exclude its entire region
+because: [[D10]]
+
+---
+
+## D1 (decision, 2026-06-10): requirements are the atomic unit
+Cards capture functional commitments (guard → outcome), not data models.
+**Rejected:** concept/type-first specs — code and SQL already own the nouns;
+what code cannot hold is intent, and what agents trample is commitments.
+
+## D2 (decision, 2026-06-10): enumeration before solvers
+Vocabularies are finite enumerations, so overlap/coverage checks run by
+exhaustive enumeration of situation space — plain set intersection, no
+SMT dependency. **Rejected (for now):** Z3/Alloy backend — adopt only if a
+real spec's situation space outgrows enumeration. Revisit then, by
+superseding this decision.
+
+## D3 (decision, 2026-06-10): error messages are interview questions
+Check output is addressed to the designer, in English, with concrete
+scenarios — a gap is "what should happen when …?", not "coverage 87%".
+This is how an incomplete spec gets completed by a designer who will never
+audit it: the system asks the next question. **Rejected:** metrics-style
+reports; they inform but do not elicit.
+
+## D9 (decision, 2026-06-10): conflict = write-write on a shared effect variable
+Overlapping guards alone are not conflict — effects on disjoint variables
+compose (both happen). Conflict is precisely: guards overlap on some
+situation and effects assign different values to the same variable there,
+with no declared `overrides:` link. Exceptions are legal only when written:
+an `overrides:` link resolves the overlap (the overriding card wins).
+Precedence is never inferred from guard specificity — implicit priority is
+exactly the kind of unstated decision agents trample. **Rejected:** flagging
+every differing-outcome overlap (drowns real conflicts in compatible ones);
+specificity-based priority (implicit, untrackable). Closes GAP-1.
+
+## D10 (decision, 2026-06-10): silence is never meaningful
+Scope for gap detection = the full vocabulary product. A situation escapes
+gap reporting only via an explicit card: an `invariant:` (claims the
+situation is impossible — falsifiable, and a standing verification
+obligation against the implementation) or a `dont-care:` (possible,
+any behavior accepted, rationale required). Every other uncovered situation
+is a gap. Corollary: a requirement whose guard lies entirely inside the
+invariant-excluded zone is dead (CHK-R8). **Rejected:** per-spec declared
+scope — silence becomes ambiguous and unchecked regions hide; bare full
+product — impossible-situation questions are noise that trains the designer
+to ignore the checker. Closes GAP-2.
