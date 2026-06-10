@@ -20,9 +20,9 @@ diff: diff.touches_footprint
 edit: edit.proceeds
 escalation: escalation
 event: event
-finding: finding.conflict, finding.dead_rule, finding.duplicate_definition, finding.frame_strengthened, finding.gap, finding.pointer, finding.stale_decision_ref, finding.unknown_term
+finding: finding.conflict, finding.dead_rule, finding.duplicate_definition, finding.frame_strengthened, finding.gap, finding.pointer, finding.stale_decision_ref, finding.unknown_term, finding.unstratified_guard
 frame: frame.strengthened
-guard: guard.within_impossible
+guard: guard.mentions_finding, guard.within_impossible
 pair: pair.contradictory, pair.effects_clash, pair.guards_overlap, pair.override_declared, pair.ruling
 procedure: procedure.executed
 query: query.mode, query.run_before_edit
@@ -38,14 +38,14 @@ work_review: work_review
 
 ## Run scope and bounds
 
-Specs analyzed (6): authoring, checking, criteria, core, process, querying.
+Specs analyzed (7): authoring, checking, criteria, core, process, querying, theory.
 
 Baseline (CHK-R11 / D15): baseline: HEAD:REPORT.md entity snapshot — no frame growth on framed entities.
 
 Gap detection runs over a **per-spec relevant projection** (CHK-R2): for each spec, the product of the variables its own requirement guards constrain. The full cross-spec vocabulary product is not enumerated (it explodes and asks nothing useful). Bounded coverage, stated loudly:
 
 - authoring: projection over [actor, collision.with_active_decision, event] (56 situations); 8 requirement guard(s).
-- checking: projection over [concept.multiply_defined, concept.via_shared_interface, decision_ref.target_status, event, frame.strengthened, guard.within_impossible, pair.effects_clash, pair.guards_overlap, pair.override_declared, situation.covered, situation.criterion_present, situation.excluded, term.resolved] (86016 situations); 11 requirement guard(s).
+- checking: projection over [concept.multiply_defined, concept.via_shared_interface, decision_ref.target_status, event, frame.strengthened, guard.mentions_finding, guard.within_impossible, pair.effects_clash, pair.guards_overlap, pair.override_declared, situation.covered, situation.criterion_present, situation.excluded, term.resolved] (172032 situations); 12 requirement guard(s).
 - criteria: projection over [criterion.touched, diff.touches_footprint, event, pair.contradictory, pair.ruling] (336 situations); 6 requirement guard(s).
 - process: projection over [event] (14 situations); 3 requirement guard(s).
 - querying: projection over [card.footprint_vs_region, card.has_because, card.kind, event, query.mode] (336 situations); 7 requirement guard(s).
@@ -70,7 +70,12 @@ None found.
 
 ## Judged (criterion execution status)
 
-No criterion cards found. No execution data — review-time execution is out of scope for `spec check`.
+4 criterion card(s) found. No execution data — review-time execution is out of scope for `spec check`.
+
+- THY-C1 (theory): coverage implements the cover
+- THY-C2 (theory): the region algebra is the subobject lattice
+- THY-C3 (theory): reflection stays well-founded
+- THY-C4 (theory): vocabulary merge is the colimit
 
 ## Summary
 

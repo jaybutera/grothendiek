@@ -168,7 +168,36 @@ def check(root: str) -> C.CheckResult:
                 framed.setdefault(card.frame, []).append(card.card_id)
     _check_frame_strengthened(root, result, framed)
 
-    # 13. spec-as-config (CHK-R12 / D18): severities are read from the
+    # 13. stratification lint (CHK-R13 / T9): a requirement guard may
+    # never mention a finding variable — findings are write-only at their
+    # own level. Invariant/dont-care cards are exempt (claims, not rules).
+    finding_vars = set(result.entity_vars.get("finding", []))
+    for spec in specs:
+        for card in spec.cards:
+            if card.kind is not CardKind.REQUIREMENT or card.guard is None:
+                continue
+            hit = [
+                cl.variable
+                for cl in card.guard.clauses
+                if cl.variable in finding_vars
+            ]
+            if hit:
+                result.findings.append(
+                    C.Finding(
+                        kind="unstratified_guard",
+                        severity=Severity.ERROR,
+                        message=(
+                            f"Guard of {card.card_id} ({spec.name}) mentions "
+                            f"finding variable(s) {', '.join(sorted(hit))} — "
+                            f"findings are write-only at their own level "
+                            f"(T9): a rule fired by reading the findings of "
+                            f"its own run admits the liar."
+                        ),
+                        location=f"{spec.name} ({card.card_id})",
+                    )
+                )
+
+    # 14. spec-as-config (CHK-R12 / D18): severities are read from the
     # spec corpus, not hardcoded. Well-founded: config is read before the
     # run's findings are classified; findings never feed back into config.
     _apply_spec_severities(specs, result)

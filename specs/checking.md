@@ -5,7 +5,7 @@ imports:
     use: [Spec, Requirement, Guard, Decision, Finding, Witness]
 severities:               # read by the checker before each run (CHK-R12/D18)
   error: [conflict, unknown_term, duplicate_definition, dead_rule,
-          unclassified_finding_kind]
+          unclassified_finding_kind, unstratified_guard]
   warning: [gap, stale_decision_ref, orphan_spec, frame_strengthened,
             nonconforming_card, entities_underspecified]
 vocabulary:
@@ -36,6 +36,9 @@ vocabulary:
   report.sections: [separated, blended]
   spec.write_count: [zero, nonzero]
   config.source: [spec, builtin]
+  guard.mentions_finding: [yes, no]       # a requirement guard reads a
+                                          # finding.* variable (T9)
+  finding.unstratified_guard: [emitted, none]
 ---
 
 # Checking
@@ -105,6 +108,16 @@ then: report.sections = separated — mechanical findings (Proven) and
       criterion execution status (Judged) are walled off; no single
       blended status is emitted
 because: [[D11]]
+
+## CHK-R13: guards never read findings
+when: event = check_run and guard.mentions_finding = yes
+then: finding.unstratified_guard = emitted — naming the card whose guard
+      mentions a finding variable. Findings are write-only at their own
+      level (the stratification law, T9 in `specs/theory.md`): a rule
+      whose firing depends on the findings of the run that fires it
+      admits the liar. Invariant and dont-care cards are exempt — they
+      are claims about outputs, not rules fired by reading them
+because: [[D18]]
 
 ## CHK-R12: the checker is configured by the spec it checks
 when: event = check_run

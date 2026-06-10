@@ -26,9 +26,10 @@ entities:                  # the factorization of situation space (D14)
   event: [event]
   finding: [finding.pointer, finding.conflict, finding.gap, finding.dead_rule,
             finding.unknown_term, finding.duplicate_definition,
-            finding.stale_decision_ref, finding.frame_strengthened]
+            finding.stale_decision_ref, finding.frame_strengthened,
+            finding.unstratified_guard]
   frame: [frame.strengthened]
-  guard: [guard.within_impossible]
+  guard: [guard.within_impossible, guard.mentions_finding]
   pair: [pair.guards_overlap, pair.effects_clash, pair.override_declared,
          pair.contradictory, pair.ruling]
   procedure: [procedure.executed]
@@ -83,7 +84,7 @@ defines:
     finding.kind: [conflict, gap, dead_rule, frame_strengthened, unknown_term,
                    duplicate_definition, stale_decision_ref, orphan_spec,
                    nonconforming_card, entities_underspecified,
-                   unclassified_finding_kind]
+                   unclassified_finding_kind, unstratified_guard]
 ---
 
 # Core interface

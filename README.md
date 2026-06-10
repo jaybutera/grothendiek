@@ -18,6 +18,20 @@ vocabulary + `when/then` requirement cards) makes them **composable** and
 This repo is self-hosted: the system's own behavior is specified in its own
 format. No tooling exists yet — `REPORT.md` is a hand-run check.
 
+## Foundation
+
+The language is founded in category theory: `specs/theory.md` states the
+formalization (T1–T10) and is kept honest three ways, per the system's
+own checkability doctrine (D19): the decidable theorems are executable
+laws (`tests/test_laws.py` — lattice, cover-partition, adjunctions);
+implementation-correspondence claims are judged criteria (THY-C1..C4)
+with footprints over the tool modules, so touching the code stales the
+math; and the construct inventory test keeps the theory total over the
+language surface. Cards never carry theory annotations — cards are
+programs, the theory is about the language, and downstream corpora
+inherit it by construction through the fixed grammar-in/findings-out
+surface.
+
 ## Reflection
 
 The checker is configured by the spec it checks (D18): finding severities
