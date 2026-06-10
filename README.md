@@ -15,8 +15,9 @@ vocabulary + `when/then` requirement cards) makes them **composable** and
 - **Decisions** — first-class cards with rationale; they can be superseded
   explicitly but never overwritten silently.
 
-This repo is self-hosted: the system's own behavior is specified in its own
-format. No tooling exists yet — `REPORT.md` is a hand-run check.
+This repo is self-hosted: the system's own behavior is specified in its
+own format, and `spec-check` (Python, uv-managed) checks it — `uv run
+spec-check .` regenerates `REPORT.md`, currently clean at zero findings.
 
 ## Foundation
 
@@ -31,6 +32,43 @@ language surface. Cards never carry theory annotations — cards are
 programs, the theory is about the language, and downstream corpora
 inherit it by construction through the fixed grammar-in/findings-out
 surface.
+
+## Core vocabulary and composition
+
+The primitives (full glossary in `system.md`; theory in `specs/theory.md`):
+
+- **Vocabulary** — finite enumerations: `sub.state: [active, paused, ...]`.
+  Variables group into **entities** (`sub.*`); **situation space** is the
+  product of all domains, factored by entity (T2).
+- **Guard** — a conjunction of `var = value` / `var != value` literals; it
+  denotes an axis-aligned region of situation space, a card's domain (T3).
+- **Effect** — assignments the card commits to: transitions
+  (`sub.state -> paused`) and response facts (`charge = no`) (T4).
+- **Cards** — requirement (guard → effects, mechanical), criterion
+  (footprint + procedure, judged), decision (choice + rationale,
+  supersede-only), invariant ("impossible"), dont-care ("accepted, with
+  reason"), verdict (a recorded check outcome).
+
+How things compose — each level has one composition rule and one
+obstruction, and the obstruction is always a reported finding:
+
+- **Specs compose by import.** Shared concepts go through interfaces;
+  the merged vocabulary is the colimit of the import diagram (T1).
+  Obstruction: `duplicate_definition` — same name, different meanings,
+  no shared interface.
+- **Requirements compose pointwise.** Where guards overlap, effects on
+  disjoint variables both apply; same variable, same value is harmless
+  redundancy. Obstruction: `conflict` — same variable, different values,
+  no `overrides:` link (D9). Frames join this rule by desugaring to
+  `-> unchanged` effects (D12).
+- **Coverage composes globally.** A situation is covered if *any* spec's
+  card covers it (D17); invariants and dont-cares remove regions
+  explicitly. Obstruction: `gap` — a situation that is neither covered,
+  impossible, nor accepted (D10: silence is never meaningful).
+- **Work composes with the spec by query.** `--touching` (footprint
+  meets the work) and `--governing` (footprint contains it) are the two
+  adjoints of restriction (T6) — the only two membership semantics there
+  are.
 
 ## Reflection
 
@@ -56,7 +94,11 @@ reflective spec exists, this stays a note, not a mechanism.
 system.md              glossary: the coverage target
 specs/interfaces/      shared vocabulary (interfaces other specs import)
 specs/*.md             behavior specs (requirement + decision cards)
-REPORT.md              latest check output (currently hand-generated)
+specs/theory.md        the categorical foundation (T1–T10, THY criteria, D19)
+src/spec_check/        the checker (parser, region algebra, checker, report)
+tests/                 unit + fixture + law + inventory tests (pytest)
+prompts/               implementation prompts for builder agents
+REPORT.md              latest check output (tool-generated, committed per PRO-R1)
 ```
 
 ## Card format
