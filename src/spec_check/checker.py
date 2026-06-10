@@ -465,6 +465,16 @@ def _value_for(effects: tuple[Effect, ...], var: str) -> str:
 # --- gap (CHK-R2 / D10) ---------------------------------------------------
 
 
+def _project_cube(cube: R.Cube, proj_vars: set[str]) -> R.Cube:
+    """Existential projection: drop constraints on variables outside the
+    projection (∃ an extension satisfying them)."""
+    return R.Cube(
+        frozenset(
+            (var, vals) for var, vals in cube.constraints if var in proj_vars
+        )
+    )
+
+
 def check_gaps(
     specs: list[Spec],
     reqs_by_spec: dict[str, list[_Req]],
@@ -475,8 +485,20 @@ def check_gaps(
     result: CheckResult,
 ) -> None:
     """Gaps over the per-spec relevant projection (CHK-R2; bounded per build
-    prompt to avoid the cross-spec product explosion — noted loudly)."""
-    excluded = invariant_cubes + dontcare_cubes
+    prompt to avoid the cross-spec product explosion — noted loudly).
+
+    Coverage is corpus-global (D17): any spec's card can cover a situation —
+    coverage is a property of the glued spec, not one file. A card
+    contributes to a projection only if its guard shares at least one
+    variable with it (it speaks about this projection's subject); its cube
+    is then projected existentially (constraints on outside variables
+    dropped). A card sharing no variable covers nothing here — otherwise a
+    guard about widgets would "cover" questions about users. Finer
+    distinctions surface in the projection that owns the distinguishing
+    variable. Exclusion cubes (invariant/dont-care) apply only when fully
+    expressible in the projection (no false impossibility by projection).
+    """
+    all_reqs = [r for rs in reqs_by_spec.values() for r in rs]
     for spec in specs:
         reqs = reqs_by_spec.get(spec.name, [])
         if not reqs:
@@ -491,7 +513,17 @@ def check_gaps(
         if not proj_vars:
             continue
         proj_vars.sort()
-        covered = [r.cube for r in reqs]
+        pv = set(proj_vars)
+        covered = []
+        for r in all_reqs:
+            cvars = {var for var, _vals in r.cube.constraints}
+            if cvars & pv:
+                covered.append(_project_cube(r.cube, pv))
+        excluded = [
+            c
+            for c in invariant_cubes + dontcare_cubes
+            if {var for var, _vals in c.constraints} <= pv
+        ]
         # restrict excluded/criteria cubes to this projection's variables
         uncovered = R.coverage_complement_cubes(
             proj_vars, covered, excluded, domains

@@ -21,15 +21,13 @@ def _counts(result):
 def test_repo_finding_set():
     result = check(REPO_ROOT)
     counts = _counts(result)
-    # Post delta cycle 5: the self-hosted spec is error-free. Every card
-    # parses, every variable is declared, event is declared once (core).
-    assert counts.get("unknown_term", 0) == 0
-    assert counts.get("duplicate_definition", 0) == 0
-    assert counts.get("nonconforming_card", 0) == 0
-    assert counts.get("conflict", 0) == 0
-    assert counts.get("dead_rule", 0) == 0
-    assert counts.get("entities_underspecified") == 1
-    assert counts.get("gap", 0) >= 1  # warnings, mostly event-projection
+    # Post delta cycle 6: the self-hosted spec is fully clean — zero
+    # findings. Coverage is corpus-global (D17), severities come from the
+    # spec (D18), entities are declared (core.md), and every residual
+    # region is covered or excluded by an explicit dont-care with
+    # rationale (D10: silence is never meaningful — but these aren't
+    # silence, they're cards).
+    assert counts == {}
     assert exit_code(result) == 0
 
 
@@ -68,8 +66,14 @@ def test_json_output_is_valid():
     assert payload["exit_code"] == 0
 
 
+def test_severities_come_from_spec():
+    # D18 / CHK-R12: the run notes must show config was read from the spec.
+    result = check(REPO_ROOT)
+    assert any("read from spec 'checking'" in n for n in result.notes)
+
+
 def test_strict_promotes_warnings():
     result = check(REPO_ROOT)
-    # exit 0 normally (warnings only); --strict promotes the gaps to errors
+    # zero findings: clean even under --strict
     assert exit_code(result) == 0
-    assert exit_code(result, strict=True) == 1
+    assert exit_code(result, strict=True) == 0

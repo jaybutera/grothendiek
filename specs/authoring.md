@@ -58,6 +58,33 @@ then: edit.proceeds = no — the agent surfaces the colliding Decision *and
       withdraw the change
 because: [[D6]]
 
+## AUT-DC1 (dont-care): agent answers to gap questions bind nothing
+dont-care: event = gap_answered and actor = builder_agent
+
+Only a designer's answer triggers AUT-R1; a builder agent "answering" a
+gap question has no spec-level effect — it may at most draft a delta
+proposal, which then waits on the designer like any other (AUT-R2).
+Rationale: gap questions exist to elicit designer intent; an agent
+supplying the answer would be the system asking itself.
+
+## AUT-DC2 (dont-care): designer spec changes are ungoverned
+dont-care: actor = designer and event = spec_change_planned
+
+The authoring cards constrain builder agents. A designer changing spec
+files directly is permitted and ungoverned — the designer is the
+authority every other rule appeals to. Rationale: a rule system needs a
+root; ours is the human. (Colliding with an active decision included:
+supersession, AUT-R3, is the recorded form of the designer exercising
+exactly that authority.)
+
+## AUT-DC3 (dont-care): designer edits without collision are ungoverned
+dont-care: actor = designer and event = agent_edit_planned and
+           collision.with_active_decision = no
+
+Pre-edit query discipline (AUT-R4) binds builder agents; the designer
+may edit at will when nothing collides. Collisions are covered for any
+actor by AUT-R5. Rationale: same root-of-trust argument as [[AUT-DC2]].
+
 ## AUT-R7: all spec changes are deltas
 when: event = spec_change_planned and actor = builder_agent
 then: change.packaged_as_delta = yes — any change (card edit, card

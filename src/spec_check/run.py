@@ -168,10 +168,61 @@ def check(root: str) -> C.CheckResult:
                 framed.setdefault(card.frame, []).append(card.card_id)
     _check_frame_strengthened(root, result, framed)
 
+    # 13. spec-as-config (CHK-R12 / D18): severities are read from the
+    # spec corpus, not hardcoded. Well-founded: config is read before the
+    # run's findings are classified; findings never feed back into config.
+    _apply_spec_severities(specs, result)
+
     # sort findings: errors first, then by kind, for stable output
     order = {Severity.ERROR: 0, Severity.WARNING: 1}
     result.findings.sort(key=lambda f: (order[f.severity], f.kind, f.message))
     return result
+
+
+def _apply_spec_severities(specs, result) -> None:
+    sev_map: dict[str, Severity] = {}
+    source = None
+    for spec in specs:
+        block = spec.raw_frontmatter.get("severities")
+        if not isinstance(block, dict):
+            continue
+        source = spec.name
+        for kind in block.get("error") or []:
+            sev_map[str(kind)] = Severity.ERROR
+        for kind in block.get("warning") or []:
+            sev_map[str(kind)] = Severity.WARNING
+    if not sev_map:
+        result.notes.append(
+            "severities: built-in defaults (no spec declares a "
+            "`severities:` block)."
+        )
+        return
+    result.notes.append(
+        f"severities: read from spec '{source}' (CHK-R12 / D18) — the "
+        f"checker is configured by the spec it checks."
+    )
+    unclassified: set[str] = set()
+    for f in result.findings:
+        if f.kind in sev_map:
+            f.severity = sev_map[f.kind]
+        else:
+            unclassified.add(f.kind)
+    for kind in sorted(unclassified):
+        # Hardcoded ERROR by necessity: an unclassified kind cannot look up
+        # its own severity — this is the one finding the config cannot govern.
+        result.findings.append(
+            C.Finding(
+                kind="unclassified_finding_kind",
+                severity=Severity.ERROR,
+                message=(
+                    f"The checker emitted finding kind '{kind}' but the "
+                    f"spec's `severities:` block does not classify it — "
+                    f"tool and spec have drifted. Add '{kind}' to the "
+                    f"severities block in {source}."
+                ),
+                location=f"{source} (frontmatter severities:)",
+            )
+        )
 
 
 def _check_frame_strengthened(

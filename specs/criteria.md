@@ -40,7 +40,7 @@ because: [[D11]], [[D13]]
 
 ## CRI-R2: contradictions escalate to the designer
 when: event = work_review and pair.contradictory = yes and
-      pair.ruling = none
+      pair.ruling != valid
 then: escalation = designer — the resolution is recorded as a
       reconciliation Verdict naming both criteria and the situation that
       exposed the tension; no artifact index, it is about the criteria
@@ -60,6 +60,22 @@ then: verdict.status = stale — for that criterion's execution verdicts;
       the criterion is due re-execution at the next work_review. Changes
       not touching the footprint transport the verdict for free
 because: [[D13]]
+
+## CRI-R6: untouched verdicts transport for free
+when: event = artifact_changed and diff.touches_footprint = no
+then: verdict.status = fresh — a change that does not touch the
+      criterion's footprint cannot stale its verdicts (D13); no
+      re-execution is due
+because: [[D13]]
+
+## CRI-DC1 (dont-care): vacuous reviews impose nothing
+dont-care: event = work_review and criterion.touched = no and
+           pair.contradictory = no
+
+A review whose work region touches no criterion and exposes no
+contradiction carries no obligations — any behavior is acceptable.
+Rationale: criteria are obligations attached to footprints (D11); where
+no footprint is touched, there is nothing to execute.
 
 ## CRI-R5: rulings expire with their criteria
 when: event = criterion_changed

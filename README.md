@@ -18,6 +18,24 @@ vocabulary + `when/then` requirement cards) makes them **composable** and
 This repo is self-hosted: the system's own behavior is specified in its own
 format. No tooling exists yet — `REPORT.md` is a hand-run check.
 
+## Reflection
+
+The checker is configured by the spec it checks (D18): finding severities
+are read from `specs/checking.md`'s `severities:` block before each run —
+read config → compute → emit, a well-founded chain. Findings never feed
+back into the evaluation that produced them, because the closed loop
+admits the liar: `when: finding.gap = none then: finding.gap = emitted`
+has no consistent assignment (negation + unstratified self-application —
+Tarski's theorem in a when-clause; the same law as Datalog's stratified
+negation).
+
+**Possible future — stratified reflection:** if specs ever need to talk
+about checker outputs at their own level, the safe extension is vocabulary
+*levels*: level-n+1 guards may mention only level-≤n variables, enforced
+as a cycle check on the variable dependency graph. That is Tarski's
+hierarchy of metalanguages as a language feature. Until a second genuinely
+reflective spec exists, this stays a note, not a mechanism.
+
 ## Layout
 
 ```

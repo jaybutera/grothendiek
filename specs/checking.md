@@ -3,6 +3,11 @@ spec: checking
 imports:
   - from: core
     use: [Spec, Requirement, Guard, Decision, Finding, Witness]
+severities:               # read by the checker before each run (CHK-R12/D18)
+  error: [conflict, unknown_term, duplicate_definition, dead_rule,
+          unclassified_finding_kind]
+  warning: [gap, stale_decision_ref, orphan_spec, frame_strengthened,
+            nonconforming_card, entities_underspecified]
 vocabulary:
   pair.guards_overlap: [yes, no]          # ∃ situation satisfying both guards
   pair.effects_clash: [yes, no]           # same effect variable, different values
@@ -30,6 +35,7 @@ vocabulary:
   annotation.criterion_present: [yes, no]
   report.sections: [separated, blended]
   spec.write_count: [zero, nonzero]
+  config.source: [spec, builtin]
 ---
 
 # Checking
@@ -100,6 +106,14 @@ then: report.sections = separated — mechanical findings (Proven) and
       blended status is emitted
 because: [[D11]]
 
+## CHK-R12: the checker is configured by the spec it checks
+when: event = check_run
+then: config.source = spec — finding severities are read from this spec's
+      `severities:` block before the run begins; a finding kind the block
+      does not classify is reported as an error (the one severity the
+      config cannot govern), never silently guessed
+because: [[D18]]
+
 ## CHK-R11: frame growth is surfaced, never silent
 when: event = check_run and frame.strengthened = yes
 then: finding.frame_strengthened = emitted — naming the framed card, the
@@ -165,6 +179,38 @@ as the default (kills composition; nearly every overlap would conflict);
 no frame construct at all (stasis intent stays inexpressible — an
 implementation that pauses the sub *and* upgrades the plan would satisfy
 the card). Closes GAP-7.
+
+## D17 (decision, 2026-06-10): coverage is a property of the glued spec
+A situation is covered if *any* card in the whole corpus covers it —
+coverage is computed against the colimit, not per file; the spec that
+governs an event need not be the spec whose projection asks about it.
+Reporting still runs per-spec projection (the build prompt's bound on
+D10's full product), with two honest rules: a card contributes to a
+projection only if its guard shares at least one variable with it (a
+guard about widgets cannot "cover" questions about users), and its cube
+is projected existentially onto the shared variables. Finer distinctions
+surface in the projection that owns the distinguishing variable.
+**Rejected:** per-spec-only coverage (every spec gets asked about every
+other spec's events — 16 noise gaps in run 6); unrestricted existential
+coverage (a card sharing no subject with a projection would cover all of
+it vacuously).
+
+## D18 (decision, 2026-06-10): reflection is well-founded or absent
+The checker reads its configuration (finding severities, CHK-R12) from
+the spec corpus *before* a run; findings never feed back into the
+evaluation that produced them. This is the productive, Nix-shaped form of
+self-reference: read config → compute → emit, a well-founded chain. The
+closed loop is deliberately rejected: if cards' guards could read the
+checker's findings about the corpus containing those cards, the language
+admits the liar — `when: finding.gap = none then: finding.gap = emitted`
+has no consistent assignment (negation + unstratified self-application;
+Tarski's theorem in a when-clause, the same law as Datalog's stratified
+negation). If richer reflection is ever needed, the path is
+stratification — vocabulary levels, where level-n+1 guards may mention
+only level-≤n variables — recorded as possible future work in README.md.
+**Rejected:** unstratified closed-loop reflection (inconsistent);
+hardcoded config (tool and spec drift silently — the checker emitted two
+finding kinds the spec never declared before this decision).
 
 ## D14 (decision, 2026-06-10): entities are the factorization of situation space
 A frame group is not a name-prefix — it is an **Entity**. Vocabularies

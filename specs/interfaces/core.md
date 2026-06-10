@@ -6,6 +6,42 @@ vocabulary:
           criterion_changed, spec_commit, artifact_pr, gap_answered,
           delta_proposed, delta_approved, delta_rejected,
           decision_change_needed, agent_edit_planned, spec_change_planned]
+entities:                  # the factorization of situation space (D14)
+  actor: [actor]
+  annotation: [annotation.criterion_present]
+  approver: [approver]
+  card: [card.footprint_vs_region, card.kind, card.has_because, card.checkable]
+  change: [change.packaged_as_delta]
+  check: [check.executed]
+  collision: [collision.with_active_decision]
+  concept: [concept.multiply_defined, concept.via_shared_interface]
+  config: [config.source]
+  criterion: [criterion.touched]
+  decision: [decision.recorded]
+  decision_ref: [decision_ref.target_status]
+  delta: [delta.status, delta.drafted, delta.retained]
+  diff: [diff.touches_footprint]
+  edit: [edit.proceeds]
+  escalation: [escalation]
+  event: [event]
+  finding: [finding.pointer, finding.conflict, finding.gap, finding.dead_rule,
+            finding.unknown_term, finding.duplicate_definition,
+            finding.stale_decision_ref, finding.frame_strengthened]
+  frame: [frame.strengthened]
+  guard: [guard.within_impossible]
+  pair: [pair.guards_overlap, pair.effects_clash, pair.override_declared,
+         pair.contradictory, pair.ruling]
+  procedure: [procedure.executed]
+  query: [query.mode, query.run_before_edit]
+  report: [report.fresh, report.sections]
+  result: [result.included, result.marked, result.includes_rationale]
+  ruling: [ruling.applied]
+  situation: [situation.covered, situation.criterion_present,
+              situation.excluded]
+  spec: [spec.write_count]
+  term: [term.resolved]
+  verdict: [verdict.recorded, verdict.status]
+  work_review: [work_review]
 defines:
   concepts:
     - Spec
@@ -45,7 +81,9 @@ defines:
     verdict.kind: [execution, reconciliation]
     decision.status: [active, superseded]
     finding.kind: [conflict, gap, dead_rule, frame_strengthened, unknown_term,
-                   duplicate_definition, stale_decision_ref, orphan_spec]
+                   duplicate_definition, stale_decision_ref, orphan_spec,
+                   nonconforming_card, entities_underspecified,
+                   unclassified_finding_kind]
 ---
 
 # Core interface

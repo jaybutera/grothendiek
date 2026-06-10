@@ -11,6 +11,7 @@ change: change.packaged_as_delta
 check: check.executed
 collision: collision.with_active_decision
 concept: concept.multiply_defined, concept.via_shared_interface
+config: config.source
 criterion: criterion.touched
 decision: decision.recorded
 decision_ref: decision_ref.target_status
@@ -44,10 +45,10 @@ Baseline (CHK-R11 / D15): baseline: HEAD:REPORT.md entity snapshot — no frame 
 Gap detection runs over a **per-spec relevant projection** (CHK-R2): for each spec, the product of the variables its own requirement guards constrain. The full cross-spec vocabulary product is not enumerated (it explodes and asks nothing useful). Bounded coverage, stated loudly:
 
 - authoring: projection over [actor, collision.with_active_decision, event] (56 situations); 8 requirement guard(s).
-- checking: projection over [concept.multiply_defined, concept.via_shared_interface, decision_ref.target_status, event, frame.strengthened, guard.within_impossible, pair.effects_clash, pair.guards_overlap, pair.override_declared, situation.covered, situation.criterion_present, situation.excluded, term.resolved] (86016 situations); 10 requirement guard(s).
-- criteria: projection over [criterion.touched, diff.touches_footprint, event, pair.contradictory, pair.ruling] (336 situations); 5 requirement guard(s).
+- checking: projection over [concept.multiply_defined, concept.via_shared_interface, decision_ref.target_status, event, frame.strengthened, guard.within_impossible, pair.effects_clash, pair.guards_overlap, pair.override_declared, situation.covered, situation.criterion_present, situation.excluded, term.resolved] (86016 situations); 11 requirement guard(s).
+- criteria: projection over [criterion.touched, diff.touches_footprint, event, pair.contradictory, pair.ruling] (336 situations); 6 requirement guard(s).
 - process: projection over [event] (14 situations); 3 requirement guard(s).
-- querying: projection over [card.footprint_vs_region, card.has_because, card.kind, event, query.mode] (336 situations); 5 requirement guard(s).
+- querying: projection over [card.footprint_vs_region, card.has_because, card.kind, event, query.mode] (336 situations); 7 requirement guard(s).
 
 ## Proven (mechanical findings)
 
@@ -61,76 +62,11 @@ Gap detection runs over a **per-spec relevant projection** (CHK-R2): for each sp
 
 ## Gaps (designer questions)
 
-- **gap** — What should happen when actor = builder_agent and event ∈ {artifact_changed, artifact_pr, check_run, criterion_changed, gap_answered, query_run, spec_commit, work_review} (any collision.with_active_decision)?
-  - witness: `actor = builder_agent, event = artifact_changed, finding.pointer = none`
-- **gap** — What should happen when actor = designer and collision.with_active_decision = no and event ∈ {agent_edit_planned, artifact_changed, artifact_pr, check_run, criterion_changed, query_run, spec_change_planned, spec_commit, work_review}?
-  - witness: `actor = designer, collision.with_active_decision = no, event = agent_edit_planned, finding.pointer = none`
-- **gap** — What should happen when actor = designer and collision.with_active_decision = yes and event ∈ {artifact_changed, artifact_pr, check_run, criterion_changed, query_run, spec_change_planned, spec_commit, work_review}?
-  - witness: `actor = designer, collision.with_active_decision = yes, event = artifact_changed, finding.pointer = none`
-- **gap** — What should happen when card.footprint_vs_region = contains and event ∈ {agent_edit_planned, artifact_changed, artifact_pr, check_run, criterion_changed, decision_change_needed, delta_approved, delta_proposed, delta_rejected, gap_answered, spec_change_planned, spec_commit, work_review} (any card.has_because, card.kind, query.mode)?
-  - witness: `card.footprint_vs_region = contains, event = agent_edit_planned, finding.pointer = none`
-- **gap** — What should happen when card.footprint_vs_region = disjoint and card.has_because = no (any card.kind, event, query.mode)?
-  - witness: `card.footprint_vs_region = disjoint, card.has_because = no, finding.pointer = none`
-- **gap** — What should happen when card.footprint_vs_region = disjoint and card.has_because = yes and event ∈ {agent_edit_planned, artifact_changed, artifact_pr, check_run, criterion_changed, decision_change_needed, delta_approved, delta_proposed, delta_rejected, gap_answered, spec_change_planned, spec_commit, work_review} (any card.kind, query.mode)?
-  - witness: `card.footprint_vs_region = disjoint, card.has_because = yes, event = agent_edit_planned, finding.pointer = none`
-- **gap** — What should happen when card.footprint_vs_region = intersects and card.has_because = no and card.kind = requirement and event = query_run and query.mode = governing?
-  - witness: `card.footprint_vs_region = intersects, card.has_because = no, card.kind = requirement, event = query_run, finding.pointer = none, query.mode = governing`
-- **gap** — What should happen when card.footprint_vs_region = intersects and event ∈ {agent_edit_planned, artifact_changed, artifact_pr, check_run, criterion_changed, decision_change_needed, delta_approved, delta_proposed, delta_rejected, gap_answered, spec_change_planned, spec_commit, work_review} (any card.has_because, card.kind, query.mode)?
-  - witness: `card.footprint_vs_region = intersects, event = agent_edit_planned, finding.pointer = none`
-- **gap** — What should happen when criterion.touched = no and diff.touches_footprint = no and event ∈ {agent_edit_planned, artifact_changed, artifact_pr, check_run, decision_change_needed, delta_approved, delta_proposed, delta_rejected, gap_answered, query_run, spec_change_planned, spec_commit} (any pair.contradictory, pair.ruling)?
-  - witness: `criterion.touched = no, diff.touches_footprint = no, event = agent_edit_planned, finding.pointer = none`
-- **gap** — What should happen when criterion.touched = no and diff.touches_footprint = yes and event ∈ {agent_edit_planned, artifact_pr, check_run, decision_change_needed, delta_approved, delta_proposed, delta_rejected, gap_answered, query_run, spec_change_planned, spec_commit} (any pair.contradictory, pair.ruling)?
-  - witness: `criterion.touched = no, diff.touches_footprint = yes, event = agent_edit_planned, finding.pointer = none`
-- **gap** — What should happen when criterion.touched = no and event = work_review and pair.contradictory = no (any diff.touches_footprint, pair.ruling)?
-  - witness: `criterion.touched = no, event = work_review, finding.pointer = none, pair.contradictory = no`
-- **gap** — What should happen when criterion.touched = no and event = work_review and pair.contradictory = yes and pair.ruling = expired (any diff.touches_footprint)?
-  - witness: `criterion.touched = no, event = work_review, finding.pointer = none, pair.contradictory = yes, pair.ruling = expired`
-- **gap** — What should happen when criterion.touched = yes and diff.touches_footprint = no and event ∈ {agent_edit_planned, artifact_changed, artifact_pr, check_run, decision_change_needed, delta_approved, delta_proposed, delta_rejected, gap_answered, query_run, spec_change_planned, spec_commit} (any pair.contradictory, pair.ruling)?
-  - witness: `criterion.touched = yes, diff.touches_footprint = no, event = agent_edit_planned, finding.pointer = none`
-- **gap** — What should happen when criterion.touched = yes and diff.touches_footprint = yes and event ∈ {agent_edit_planned, artifact_pr, check_run, decision_change_needed, delta_approved, delta_proposed, delta_rejected, gap_answered, query_run, spec_change_planned, spec_commit} (any pair.contradictory, pair.ruling)?
-  - witness: `criterion.touched = yes, diff.touches_footprint = yes, event = agent_edit_planned, finding.pointer = none`
-- **gap** — What should happen when event ∈ {agent_edit_planned, artifact_changed, artifact_pr, criterion_changed, decision_change_needed, delta_approved, delta_proposed, delta_rejected, gap_answered, query_run, spec_change_planned, spec_commit, work_review} (any concept.multiply_defined, concept.via_shared_interface, decision_ref.target_status, frame.strengthened, guard.within_impossible, pair.effects_clash, pair.guards_overlap, pair.override_declared, situation.covered, situation.criterion_present, situation.excluded, term.resolved)?
-  - witness: `event = agent_edit_planned, finding.pointer = none`
-- **gap** — What should happen when event ∈ {agent_edit_planned, artifact_changed, check_run, criterion_changed, decision_change_needed, delta_approved, delta_proposed, delta_rejected, gap_answered, query_run, spec_change_planned, work_review}?
-  - witness: `event = agent_edit_planned, finding.pointer = none`
+None found.
 
 ## Structural warnings
 
-**Entities Underspecified:** 1.
-
-- **entities_underspecified** — No spec declares an explicit `entities:` block; entities were derived from dotted variable prefixes (D14 interim rule). Proposed explicit declaration (for a designer delta):
-  entities:
-  actor: [actor]
-  annotation: [annotation.criterion_present]
-  approver: [approver]
-  card: [card.checkable, card.footprint_vs_region, card.has_because, card.kind]
-  change: [change.packaged_as_delta]
-  check: [check.executed]
-  collision: [collision.with_active_decision]
-  concept: [concept.multiply_defined, concept.via_shared_interface]
-  criterion: [criterion.touched]
-  decision: [decision.recorded]
-  decision_ref: [decision_ref.target_status]
-  delta: [delta.drafted, delta.retained, delta.status]
-  diff: [diff.touches_footprint]
-  edit: [edit.proceeds]
-  escalation: [escalation]
-  event: [event]
-  finding: [finding.conflict, finding.dead_rule, finding.duplicate_definition, finding.frame_strengthened, finding.gap, finding.pointer, finding.stale_decision_ref, finding.unknown_term]
-  frame: [frame.strengthened]
-  guard: [guard.within_impossible]
-  pair: [pair.contradictory, pair.effects_clash, pair.guards_overlap, pair.override_declared, pair.ruling]
-  procedure: [procedure.executed]
-  query: [query.mode, query.run_before_edit]
-  report: [report.fresh, report.sections]
-  result: [result.included, result.includes_rationale, result.marked]
-  ruling: [ruling.applied]
-  situation: [situation.covered, situation.criterion_present, situation.excluded]
-  spec: [spec.write_count]
-  term: [term.resolved]
-  verdict: [verdict.recorded, verdict.status]
-  work_review: [work_review]
-  - location: vocabulary (all specs)
+None found.
 
 ## Judged (criterion execution status)
 
@@ -138,4 +74,4 @@ No criterion cards found. No execution data — review-time execution is out of 
 
 ## Summary
 
-0 error(s), 17 warning(s). Exit code: 0.
+0 error(s), 0 warning(s). Exit code: 0.

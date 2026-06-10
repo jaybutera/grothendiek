@@ -44,6 +44,19 @@ then: result.includes_rationale = yes — the linked Decisions appear in
       the result with their rationale and rejected alternatives, so an
       agent can argue with a rule, not just obey or silently break it
 
+## QRY-R6: disjoint cards are not in the result
+when: event = query_run and card.footprint_vs_region = disjoint
+then: result.included = no — a card whose footprint shares nothing with
+      the region has no bearing on the work
+
+## QRY-R7: merely-intersecting cards are excluded in governing mode
+when: event = query_run and query.mode = governing and
+      card.footprint_vs_region = intersects
+then: result.included = no — governing mode returns only cards covering
+      the whole region (the universal adjoint); this card belongs to
+      touching mode (QRY-R1)
+because: [[D4]]
+
 ## QRY-R5: criteria are returned, and marked as such
 when: event = query_run and card.kind = criterion and
       card.footprint_vs_region != disjoint
