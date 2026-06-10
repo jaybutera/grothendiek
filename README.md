@@ -1,4 +1,4 @@
-# cat-spec
+# Grothendiek
 
 A spec system for the designer ↔ builder-agent interface. Specs are markdown
 files whose prose stays primary; a small formal surface (frontmatter
