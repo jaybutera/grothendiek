@@ -12,19 +12,25 @@ coverage` (future) diffs this list against the union of spec footprints.
 - **Situation** — one assignment of values to vocabulary terms.
 - **Card** — the atomic, addressable unit of spec content: requirement,
   decision, invariant, don't-care, or verdict.
-- **Requirement** — a commitment: guard → effects (mechanical) or guard →
-  declared evaluation procedure (judged).
+- **Requirement** — a fully mechanical commitment: guard → effects, checked
+  by enumeration.
+- **Criterion** — a review obligation in the judged layer: footprint +
+  procedure, executed by an agent at review time; never counts toward
+  coverage, never enters check-time conflict analysis.
 - **Guard** — predicate over situations, written in vocabulary terms; the
   card's domain.
 - **Effect** — an assignment to a vocabulary variable (a transition like
   `sub.state -> paused`, or a response fact like `charge = no`).
-- **Procedure** — a judged card's declared evaluation steps, executed by an
+- **Frame** — an optional clause naming a variable group frozen unless
+  mentioned; desugars to `-> unchanged` effects.
+- **Procedure** — a criterion's declared evaluation steps, executed by an
   agent; verdicts are judgment calls.
 - **Invariant** — a card claiming a region of situation space is impossible;
   falsifiable, and a verification obligation against the implementation.
 - **Don't-care** — a card accepting any behavior in a possible region, with
   rationale.
-- **Verdict** — a recorded designer ruling about other cards.
+- **Verdict** — a recorded designer ruling on contradictory criteria, bound
+  to the artifact it judged.
 - **Footprint** — the region of situation space (or topic set) a card governs.
 - **Decision** — a recorded choice with rationale and supersession links.
 - **Conflict** — overlapping guards with incompatible outcomes.

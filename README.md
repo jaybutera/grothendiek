@@ -39,9 +39,12 @@ because: [[D2]]                            ← rationale links
 <choice, rejected alternatives, and why>   supersedes: D1
 ```
 
-Every card declares how it is checked (D7): **mechanical** cards carry
-guard + effects in vocabulary terms, checked by enumeration; **judged**
-cards declare an explicit evaluation procedure an agent executes, verdicts
-marked as judgment calls. A card with no check procedure cannot exist.
-Situations escape gap detection only via explicit `invariant:` or
-`dont-care:` cards — silence is never meaningful (D10).
+Every card declares how it is checked (D7→D11): **requirements** are fully
+mechanical — guard + effects in vocabulary terms, checked by enumeration,
+with an optional `frame:` clause freezing a variable group (D12);
+**criteria** are the structurally separate judged layer — footprint + an
+evaluation procedure an agent executes at review time, verdicts recorded
+as judgment calls. Criteria never count toward coverage and never enter
+check-time conflict analysis (`specs/criteria.md`). A card with no check
+procedure cannot exist. Situations escape gap detection only via explicit
+`invariant:` or `dont-care:` cards — silence is never meaningful (D10).

@@ -7,7 +7,7 @@ vocabulary:
   event: [query_run]
   query.mode: [touching, governing]
   card.footprint_vs_region: [disjoint, intersects, contains]
-  card.tier: [mechanical, judged]
+  card.kind: [requirement, criterion]
 ---
 
 # Querying
@@ -40,12 +40,13 @@ then: the linked Decisions appear in the result with their rationale and
       rejected alternatives, so an agent can argue with a rule, not just
       obey or silently break it
 
-## QRY-R5: judged cards are marked in results
-when: event = query_run and card.tier = judged and
+## QRY-R5: criteria are returned, and marked as such
+when: event = query_run and card.kind = criterion and
       card.footprint_vs_region != disjoint
-then: result.marked = judged — the card is included per QRY-R1–R3, and the
-      consumer sees its verdicts are judgment calls, not enumeration
-because: [[D7]]
+then: result.marked = criterion — the card is included per QRY-R1–R3, so a
+      builder agent sees its review obligations alongside the requirements,
+      but never mistakes a judgment for a theorem
+because: [[D11]]
 
 ---
 

@@ -1,41 +1,48 @@
-# Check report — 2026-06-10, run 2 (hand-run; no tooling exists yet)
+# Check report — 2026-06-10, run 3 (hand-run; no tooling exists yet)
 
 Per CHK-R2 / D3, gaps are phrased as questions for the designer. Per CHK-I1,
-every finding carries a witness or location.
+every finding carries a witness or location. Per CHK-R10, Proven and Judged
+are reported separately.
 
-## Resolved since run 1
+## Resolved since run 2
 
-- **GAP-1 → closed by D9** (`specs/checking.md`): conflict = overlapping
-  guards + different values on the same effect variable + no `overrides:`
-  link. Effects are mandatory and structured (D7), so this is fully
-  mechanical.
-- **GAP-2 → closed by D10** (`specs/checking.md`): scope = full vocabulary
-  product; situations escape only via explicit `invariant:` / `dont-care:`
-  cards. Silence is never meaningful. Dead-rule detection added (CHK-R8).
-- **D5 → superseded by D7** (`specs/authoring.md`): no card without a check;
-  two tiers (mechanical, judged); prose carries rationale only. The three
-  `kind: prose` cards were converted: CHK-R4 (mechanical), CHK-R6 → CHK-I1
-  (invariant), QRY-R5 (mechanical, now governs judged-card marking).
-- Lint from run 1 cleared: `authoring.md` no longer imports unused `Finding`.
+- **GAP-7 → closed by D12** (`specs/checking.md`): unmentioned variables
+  stay unconstrained (composition survives); an optional `frame: <group>`
+  clause desugars to `-> unchanged` effects, so frame violations surface
+  as ordinary D9 conflicts with witnesses. No new checking machinery.
+- **GAP-8 → closed by D11** (`specs/criteria.md`, new): judged cards become
+  **criteria** — a distinct kind (footprint + procedure), not a requirement
+  tier. Criteria never cover (CHK-R9), never enter check-time conflict
+  analysis, and contradictions are settled at review time as Verdict cards
+  (CRI-R2/R3). D7 superseded; its no-card-without-a-check mandate carries
+  forward. Verdict is now a governed concept.
 
-## Conflicts
+## Proven (mechanical findings)
 
-None found. (CHK-R1's and CHK-R8's guards are disjoint on `finding` effects;
-QRY-R5 composes with QRY-R1–R3 — disjoint effect variables: membership vs.
-marking.)
+**Conflicts:** none found. (CHK-R2 and CHK-R9 overlap on uncovered
+situations but write different variables — `finding` vs. `annotation` —
+so they compose per D9.)
+
+**Dead rules:** none found (no invariant cards exist yet to exclude
+regions).
+
+## Judged (criterion execution status)
+
+No criterion cards exist yet, so nothing to execute. First candidates when
+the system specs real product behavior: tone/feel commitments that
+motivated the judged layer.
 
 ## Gaps
 
-**GAP-3 — requirements have no lifecycle.** (open, unchanged)
-Witness: `core.md` values — `decision.status` exists, `requirement.status`
-does not. The D5→D7 supersession sharpened this: requirement cards were
-edited in place this run, legally, because AUT-R3 covers only decisions.
-→ *Can a requirement be deleted outright, or only superseded like a
-decision? Should in-place edits require a delta (AUT-R1) at minimum?*
+**GAP-3 — requirements have no lifecycle.** (open; pressure increasing)
+Witness: runs 2 and 3 both edited requirement cards in place, legally —
+AUT-R3 protects only decisions.
+→ *Can a requirement be deleted outright, or only superseded? Should
+in-place edits require a delta (AUT-R1) at minimum?*
 
 **GAP-4 — vocabulary evolution is ungoverned.** (open, unchanged)
-Witness: this run renamed `card.kind` values to `card.tier` values in
-`querying.md` with no governing card.
+Witness: this run renamed `card.tier` → `card.kind` in `querying.md` with
+no governing card.
 → *Should vocabulary changes be deltas requiring designer approval?*
 
 **GAP-5 — delta rejection is half-specified.** (open, unchanged)
@@ -43,34 +50,33 @@ Witness: situation `event = delta_rejected` — no card fires.
 → *Is a rejected delta discarded, or recorded with the reason so agents
 stop re-proposing it?*
 
-**GAP-6 — nothing says when check runs.** (open, unchanged)
-Witness: glossary "Check report" has no governing requirement on cadence.
-→ *CI gate, pre-edit agent hook, both, or on-demand?*
+**GAP-6 — nothing says when check runs.** (open; now two-sided)
+D11 added a second trigger surface: criteria execute at `work_review`, but
+nothing defines when a work_review happens either.
+→ *check: CI gate, pre-edit hook, or on-demand? work_review: every PR,
+every delta, or designer-initiated?*
 
-**GAP-7 — the frame assumption is implicit.** (new)
-Effects mention some variables; the rest are unconstrained — that reading
-makes composition work (D9), but "and nothing else changes" is currently
-inexpressible.
-Witness: any card — e.g. a future `sub.state -> paused` card cannot forbid
-a simultaneous `sub.price` change.
-→ *Add an optional `frame:` clause ("no other variables in this group
-move"), or keep unmentioned-means-unconstrained as the permanent rule?*
+**GAP-9 — verdict staleness is undefined.** (new, consequence of D11)
+CRI-R1 binds verdicts to artifacts "so staleness is detectable," but
+nothing says when a verdict expires.
+Witness: a Verdict recorded against commit X; the criterion's footprint
+code is rewritten in commit Y; CRI-R3 still suppresses re-raising.
+→ *Does a verdict expire when the judged artifact changes, when either
+criterion card changes, or only when the designer revokes it?*
 
-**GAP-8 — judged-card conflicts are undetectable.** (new, consequence of D7)
-CHK-R1/D9 define conflict via effect variables; judged cards have
-procedures, not effects, so judged×judged and judged×mechanical overlaps
-are invisible to check.
-Witness: two judged cards with overlapping footprints and contradictory
-procedures would pass check silently.
-→ *Should overlapping judged cards be flagged for one-time designer
-adjudication, recorded as Verdict cards? (Verdict exists in core.md but
-nothing governs it — currently an uncovered concept.)*
+**GAP-10 — frame groups are undefined.** (new, consequence of D12)
+D12 says `frame: <group>` freezes "every variable in the group," but
+vocabulary declares flat variables; no card defines what a group is.
+Witness: `frame: sub.*` — is `sub.*` all declared `sub.`-prefixed
+variables across all specs, or only those in the card's own spec?
+→ *Are groups just name prefixes resolved across the whole colimit, or
+declared explicitly in vocabulary blocks?*
 
 ## Coverage (vs `system.md`)
 
-Covered: Spec, Interface, Card, Requirement, Guard, Effect, Procedure,
-Footprint, Decision, Conflict, Gap, Witness, Finding/Check report, Query,
-Delta, Designer, Builder agent, Invariant (CHK-R8, D10), Don't-care (D10).
+Covered: Spec, Interface, Card, Requirement, Criterion, Guard, Effect,
+Frame, Procedure, Footprint, Decision, Conflict, Gap, Witness,
+Finding/Check report, Query, Delta, Designer, Builder agent, Invariant,
+Don't-care, Verdict.
 
-Uncovered: **Verdict** (defined in `core.md`, governed by nothing — see
-GAP-8); **Situation/Vocabulary** still pending GAP-4.
+Uncovered: **Situation/Vocabulary** still pending GAP-4 (and now GAP-10).

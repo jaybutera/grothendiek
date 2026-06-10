@@ -9,7 +9,9 @@ vocabulary:
   pair.effects_clash: [yes, no]           # same effect variable, different values
   pair.override_declared: [yes, no]       # an overrides: link connects the pair
   situation.excluded: [no, by_invariant, by_dont_care]
-  situation.covered: [yes, no]            # ≥1 guard applies
+  situation.covered: [yes, no]            # ≥1 requirement guard applies;
+                                          # criteria never cover (D11)
+  situation.criterion_present: [yes, no]  # ≥1 criterion footprint touches
   guard.within_impossible: [yes, no]      # guard region ⊆ invariant-excluded zone
   concept.multiply_defined: [yes, no]
   concept.via_shared_interface: [yes, no]
@@ -20,9 +22,12 @@ vocabulary:
 
 # Checking
 
-`spec check` reads every spec, builds the import diagram, enumerates
-situation space, and emits findings. It is the "compiler": its errors are
-conflicts and structural breakage; its warnings are gaps and staleness.
+`spec check` reads every spec, builds the import diagram, desugars `frame:`
+clauses into `-> unchanged` effects ([[D12]]), enumerates situation space,
+and emits findings. It is the "compiler": its errors are conflicts and
+structural breakage; its warnings are gaps and staleness. It analyzes
+requirements only — criteria are executed at review time, not check time
+([[D11]] in `specs/criteria.md`).
 
 ## CHK-R1: conflicts are reported with witnesses
 when: event = check_run and pair.guards_overlap = yes and
@@ -65,6 +70,21 @@ when: event = check_run and guard.within_impossible = yes
 then: finding = dead_rule, naming the card whose guard can never fire and
       the invariant card(s) that exclude its entire region
 because: [[D10]]
+
+## CHK-R9: criteria do not silence gaps
+when: event = check_run and situation.covered = no and
+      situation.excluded = no and situation.criterion_present = yes
+then: annotation.criterion_present = yes — the gap finding (CHK-R2) still
+      fires; it additionally names the touching criteria, so the designer
+      sees "judged attention exists here, mechanical coverage does not"
+because: [[D11]]
+
+## CHK-R10: the report never blends confidence levels
+when: event = check_run
+then: report.sections = separated — mechanical findings (Proven) and
+      criterion execution status (Judged) are walled off; no single
+      blended status is emitted
+because: [[D11]]
 
 ---
 
@@ -109,3 +129,18 @@ invariant-excluded zone is dead (CHK-R8). **Rejected:** per-spec declared
 scope — silence becomes ambiguous and unchecked regions hide; bare full
 product — impossible-situation questions are noise that trains the designer
 to ignore the checker. Closes GAP-2.
+
+## D12 (decision, 2026-06-10): unmentioned means unconstrained; frame: buys stasis
+The default reading of effects stays *unmentioned = unconstrained* — a card
+promises nothing about variables it doesn't list, which is what lets
+overlapping cards compose (D9). When the designer means "and nothing else
+moves," the card says so with an optional `frame: <group>` clause, which
+desugars to explicit `-> unchanged` effects for every variable in the
+group not already mentioned. No new checking machinery: after desugaring,
+D9's write-write rule detects frame violations as ordinary conflicts with
+witnesses — converting silent cross-spec disagreements ("can suspension
+move prices?") into checkable ones. **Rejected:** unmentioned = unchanged
+as the default (kills composition; nearly every overlap would conflict);
+no frame construct at all (stasis intent stays inexpressible — an
+implementation that pauses the sub *and* upgrades the plan would satisfy
+the card). Closes GAP-7.

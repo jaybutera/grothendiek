@@ -23,7 +23,7 @@ when: event = gap_answered and actor = designer
 then: an agent drafts a Delta containing the new/changed requirement card
       (with guard, effects, and `because:` links) and presents it for
       approval; nothing merges on the designer's words alone
-because: [[D7]]
+because: [[D11]]
 
 ## AUT-R2: only the designer approves deltas
 when: event = delta_approved
@@ -52,11 +52,11 @@ because: [[D6]]
 
 ## AUT-R6: operative content is checkable; prose carries rationale
 when: event = delta_proposed
-then: every requirement card in the delta has a guard in vocabulary terms
-      and either structured effects (tier = mechanical) or a declared
-      evaluation procedure (tier = judged); explanation, motivation, and
+then: every requirement card in the delta has a guard and structured
+      effects in vocabulary terms; every criterion card has a footprint
+      and a declared evaluation procedure; explanation, motivation, and
       nuance go in prose, which never carries operative semantics
-because: [[D7]]
+because: [[D11]]
 
 ---
 
@@ -71,6 +71,8 @@ the graveyard option.
 
 ## D7 (decision, 2026-06-10): no card without a check
 supersedes: D5
+status: superseded by [[D11]] (the mandate stands; the two-tier framing
+became the requirement/criterion split in `specs/criteria.md`)
 Expressiveness is bounded by checkability, deliberately: a card that
 declares no check procedure cannot exist. Operative content (guard +
 effects) is written in vocabulary terms, at one of two tiers — *mechanical*
